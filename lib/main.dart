@@ -1,3 +1,4 @@
+import 'package:apptodo/models/item.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/cupertino.dart';
 
@@ -16,27 +17,42 @@ class App extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(
-        key: key,
-      ),
+      home: HomePage(),
     );
   }
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomePage extends StatefulWidget {
+  var items = [];
 
+  HomePage() {
+    items = [];
+    items.add(Item(title: "Item 1", done: false));
+    items.add(Item(title: "Item 2", done: true));
+    items.add(Item(title: "Item 3", done: false));
+  }
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Todo List"),
-        actions: <Widget>[
-          Icon(Icons.plus_one),
-        ],
-      ),
-      body: Container(
-        child: Center(child: const Text("Olá Mundo")),
+      appBar: AppBar(title: const Text("Todo List")),
+      body: ListView.builder(
+        itemCount: widget.items.length,
+        itemBuilder: (BuildContext context, int index) {
+          final item = widget.items[index];
+
+          return CheckboxListTile(
+            title: Text(item.title),
+            key: Key(item.title),
+            value: item.done,
+            onChanged: (value) {},
+          );
+        },
       ),
     );
   }
