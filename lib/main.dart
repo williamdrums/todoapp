@@ -50,6 +50,12 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void remove(int index) {
+    setState(() {
+      widget.items.removeAt(index);
+    });
+  }
+
   var newTaskCtrl = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -76,17 +82,25 @@ class _HomePageState extends State<HomePage> {
         itemBuilder: (BuildContext context, int index) {
           final item = widget.items[index];
 
-          return CheckboxListTile(
-            title: Text(item.title),
-            key: Key(item.title),
-            value: item.done,
-            onChanged: (value) {
-              //altera o widget e atualiza a tela
-              setState(() {
-                item.done = value;
+//Dismissible efeito de arrastar item da tela
+          return Dismissible(
+              child: CheckboxListTile(
+                title: Text(item.title),
+                value: item.done,
+                onChanged: (value) {
+                  //altera o widget e atualiza a tela
+                  setState(() {
+                    item.done = value;
+                  });
+                },
+              ),
+              key: Key(item.title),
+              background: Container(
+                color: Colors.red.withOpacity(0.9),
+              ),
+              onDismissed: (direction) {
+                remove(index);
               });
-            },
-          );
         },
       ),
 
