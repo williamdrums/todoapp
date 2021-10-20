@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:apptodo/models/item.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:flutter/cupertino.dart';
 
 void main() {
@@ -25,11 +28,8 @@ class App extends StatelessWidget {
 class HomePage extends StatefulWidget {
   var items = [];
 
-  HomePage() {
+  HomePage({Key? key}) : super(key: key) {
     items = [];
-    items.add(Item(title: "Item 1", done: false));
-    items.add(Item(title: "Item 2", done: true));
-    items.add(Item(title: "Item 3", done: false));
   }
 
   @override
@@ -37,6 +37,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  var newTaskCtrl = TextEditingController();
 //adicionando item a lista
   void add() {
     if (newTaskCtrl.text.isEmpty) return;
@@ -47,16 +48,40 @@ class _HomePageState extends State<HomePage> {
         done: false,
       ));
       newTaskCtrl.clear();
+      save();
     });
   }
 
   void remove(int index) {
     setState(() {
       widget.items.removeAt(index);
+      save();
     });
   }
 
-  var newTaskCtrl = TextEditingController();
+  Future loadData() async {
+    var prefs = await SharedPreferences.getInstance();
+    var data = prefs.getString('data');
+
+    if (data != null) {
+      //transformando string em json
+      Iterable decoded = jsonDecode(data);
+      List<Item> result = decoded.map((x) => Item.fromJson(x)).toList();
+      setState(() {
+        widget.items = result;
+      });
+    }
+  }
+
+  save() async {
+    var prefs = await SharedPreferences.getInstance();
+    await prefs.setString('data', jsonEncode(widget.items));
+  }
+
+  _HomePageState() {
+    loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -64,7 +89,6 @@ class _HomePageState extends State<HomePage> {
           title: TextFormField(
         keyboardType: TextInputType.text,
         controller: newTaskCtrl,
-
         style: const TextStyle(
           color: Colors.white,
           fontSize: 18,
@@ -91,6 +115,7 @@ class _HomePageState extends State<HomePage> {
                   //altera o widget e atualiza a tela
                   setState(() {
                     item.done = value;
+                    save();
                   });
                 },
               ),
